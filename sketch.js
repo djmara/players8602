@@ -1,4 +1,5 @@
 let playersData = [];
+let filteredPlayers = [];
 let marks = [];
 
 let wcYears = [1986, 1990, 1994, 1998, 2002];
@@ -9,10 +10,8 @@ let yearSwitchMillis = 15000;
 let lastSwitchMillis = 0;
 
 let globalRotation = 0;
-let rotationSpeed = 0.002;
 
 let yearColors = [];
-
 let gridColor;
 
 function preload() {
@@ -33,6 +32,17 @@ function setup() {
     color(180, 100, 255)
   ];
 
+  // FILTER: only players from 1986–2002
+  filteredPlayers = playersData.filter(p => 
+    p.list_tournaments.includes("1986") ||
+    p.list_tournaments.includes("1990") ||
+    p.list_tournaments.includes("1994") ||
+    p.list_tournaments.includes("1998") ||
+    p.list_tournaments.includes("2002")
+  );
+
+  console.log("Filtered players:", filteredPlayers.length);
+
   currentYear = wcYears[currentYearIndex];
   loadMarks();
 }
@@ -47,7 +57,6 @@ function draw() {
     lastSwitchMillis = millis();
   }
 
-  // Global pulse
   let pulseGlobal = 1.0 + 0.05 * sin(frameCount * 0.01);
 
   push();
@@ -78,7 +87,6 @@ function draw() {
     let x2 = cos(angle) * (r + len);
     let y2 = sin(angle) * (r + len);
 
-    // Hover detection
     let localMouse = createVector(mouseX - width/2, mouseY - height/2);
     localMouse.rotate(-globalRotation);
 
@@ -173,15 +181,15 @@ function drawLegend() {
 function loadMarks() {
   marks = [];
 
-  for (let i = 0; i < playersData.length; i++) {
-    let player = playersData[i];
+  for (let i = 0; i < filteredPlayers.length; i++) {
+    let player = filteredPlayers[i];
     let tournaments = player.list_tournaments;
     let birthYear = int(player.birth_date.substring(0, 4));
     let name = player.given_name + " " + player.family_name;
 
     if (!tournaments || !birthYear || name === "not applicable") continue;
 
-    let tourYears = tournaments.split(", ");
+    let tourYears = tournaments.toString().split(", ");
 
     for (let j = 0; j < tourYears.length; j++) {
       let tYear = int(tourYears[j].trim());
