@@ -32,14 +32,17 @@ function setup() {
     color(180, 100, 255)
   ];
 
-  // FILTER: only players from 1986–2002
-  filteredPlayers = playersData.filter(p => 
-    p.list_tournaments.includes("1986") ||
-    p.list_tournaments.includes("1990") ||
-    p.list_tournaments.includes("1994") ||
-    p.list_tournaments.includes("1998") ||
-    p.list_tournaments.includes("2002")
-  );
+  // FIXED FILTER: convert to string
+  filteredPlayers = playersData.filter(p => {
+    let tStr = p.list_tournaments.toString();
+    return (
+      tStr.includes("1986") ||
+      tStr.includes("1990") ||
+      tStr.includes("1994") ||
+      tStr.includes("1998") ||
+      tStr.includes("2002")
+    );
+  });
 
   console.log("Filtered players:", filteredPlayers.length);
 
