@@ -32,9 +32,9 @@ function setup() {
     color(180, 100, 255)
   ];
 
-  // FIXED FILTER: convert to string
+  // Safe filter
   filteredPlayers = playersData.filter(p => {
-    let tStr = p.list_tournaments.toString();
+    let tStr = String(p.list_tournaments);
     return (
       tStr.includes("1986") ||
       tStr.includes("1990") ||
@@ -51,6 +51,7 @@ function setup() {
 }
 
 function draw() {
+  if (!playersData) return;
   background(0);
 
   if (millis() - lastSwitchMillis > yearSwitchMillis) {
@@ -192,7 +193,7 @@ function loadMarks() {
 
     if (!tournaments || !birthYear || name === "not applicable") continue;
 
-    let tourYears = tournaments.toString().split(", ");
+    let tourYears = String(tournaments).split(", ");
 
     for (let j = 0; j < tourYears.length; j++) {
       let tYear = int(tourYears[j].trim());
