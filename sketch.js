@@ -14,7 +14,6 @@ let rotationSpeed = 0.002;
 let yearColors = [];
 
 let gridColor;
-let font;
 
 function preload() {
   playersData = loadJSON('players.json');
