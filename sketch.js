@@ -17,7 +17,7 @@ let gridColor;
 let font;
 
 function preload() {
-  playersData = loadJSON('assets/players.json');
+  playersData = loadJSON('players.json');
 }
 
 function setup() {
