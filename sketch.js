@@ -1,5 +1,4 @@
 let playersData = [];
-let filteredPlayers = [];
 let marks = [];
 
 let wcYears = [1986, 1990, 1994, 1998, 2002];
@@ -32,19 +31,7 @@ function setup() {
     color(180, 100, 255)
   ];
 
-  // Safe filter
-  filteredPlayers = playersData.filter(p => {
-    let tStr = String(p.list_tournaments);
-    return (
-      tStr.includes("1986") ||
-      tStr.includes("1990") ||
-      tStr.includes("1994") ||
-      tStr.includes("1998") ||
-      tStr.includes("2002")
-    );
-  });
-
-  console.log("Filtered players:", filteredPlayers.length);
+  console.log("Loaded players:", playersData.length);
 
   currentYear = wcYears[currentYearIndex];
   loadMarks();
@@ -117,7 +104,6 @@ function draw() {
 
   drawLegend();
 
-  // Player name on hover
   if (hovered !== null) {
     let label = `${hovered.label} (${hovered.birthYear})`;
     fill(0, 220);
@@ -185,8 +171,8 @@ function drawLegend() {
 function loadMarks() {
   marks = [];
 
-  for (let i = 0; i < filteredPlayers.length; i++) {
-    let player = filteredPlayers[i];
+  for (let i = 0; i < playersData.length; i++) {
+    let player = playersData[i];
     let tournaments = player.list_tournaments;
     let birthYear = int(player.birth_date.substring(0, 4));
     let name = player.given_name + " " + player.family_name;
