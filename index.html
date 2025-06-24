@@ -30,7 +30,6 @@
         canvas {
             max-width: 100%;
             height: auto;
-            border: 1px solid #333;
         }
         @media (max-width: 768px) {
             body {
@@ -165,10 +164,11 @@
             let maxWidth = min(windowWidth - 40, baseWidth);
             let maxHeight = min(windowHeight - 100, baseHeight);
             
-            // Maintain aspect ratio
-            let aspectRatio = baseHeight / baseWidth;
+            // Maintain proper aspect ratio (1920:1080 = 16:9)
+            let aspectRatio = baseHeight / baseWidth; // 0.5625 (9/16)
             
-            if (maxHeight > maxWidth * aspectRatio) {
+            // Choose dimensions that fit while maintaining aspect ratio
+            if (maxWidth * aspectRatio <= maxHeight) {
                 canvasWidth = maxWidth;
                 canvasHeight = maxWidth * aspectRatio;
             } else {
@@ -212,7 +212,7 @@
             
             let aspectRatio = baseHeight / baseWidth;
             
-            if (maxHeight > maxWidth * aspectRatio) {
+            if (maxWidth * aspectRatio <= maxHeight) {
                 canvasWidth = maxWidth;
                 canvasHeight = maxWidth * aspectRatio;
             } else {
