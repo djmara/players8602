@@ -156,23 +156,27 @@
         let scaleFactor;
 
         function setup() {
-            // Use exact 1920 x 1080 dimensions with 16:9 responsive scaling
+            // Use exact 1920 x 1080 dimensions with proper 16:9 responsive scaling
             let baseWidth = 1920;
             let baseHeight = 1080;
             
-            // Calculate maximum size that fits in viewport while maintaining 16:9
+            // Calculate maximum size that fits in viewport
             let maxWidth = windowWidth - 40;
             let maxHeight = windowHeight - 100;
             
-            // Always maintain 16:9 aspect ratio
-            let aspectRatio = 9 / 16; // height/width for 16:9
+            // For 16:9 ratio: width = 16, height = 9
+            // So height = width * (9/16)
+            let targetHeight = maxWidth * (9/16);
+            let targetWidth = maxHeight * (16/9);
             
-            if (maxWidth * aspectRatio <= maxHeight) {
+            if (targetHeight <= maxHeight) {
+                // Width-constrained: use full available width
                 canvasWidth = maxWidth;
-                canvasHeight = maxWidth * aspectRatio;
+                canvasHeight = targetHeight;
             } else {
+                // Height-constrained: use full available height
+                canvasWidth = targetWidth;
                 canvasHeight = maxHeight;
-                canvasWidth = maxHeight / aspectRatio;
             }
             
             // Calculate scale factor for all elements
@@ -209,15 +213,16 @@
             let maxWidth = windowWidth - 40;
             let maxHeight = windowHeight - 100;
             
-            // Always maintain 16:9 aspect ratio
-            let aspectRatio = 9 / 16;
+            // For 16:9 ratio: width = 16, height = 9
+            let targetHeight = maxWidth * (9/16);
+            let targetWidth = maxHeight * (16/9);
             
-            if (maxWidth * aspectRatio <= maxHeight) {
+            if (targetHeight <= maxHeight) {
                 canvasWidth = maxWidth;
-                canvasHeight = maxWidth * aspectRatio;
+                canvasHeight = targetHeight;
             } else {
+                canvasWidth = targetWidth;
                 canvasHeight = maxHeight;
-                canvasWidth = maxHeight / aspectRatio;
             }
             
             scaleFactor = canvasWidth / baseWidth;
