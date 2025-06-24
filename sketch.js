@@ -1,5 +1,6 @@
 // Converted from Processing to p5.js
-// Original: scroll_pt4.pde
+// Original: V26ZD FULL — FRAME EXPORT READY — 1986–2002 radial
+// Updated with 1920×1080 canvas size
 
 let playersData = null;
 let marks = [];
@@ -12,6 +13,10 @@ let globalRotation = 0;
 let rotationSpeed = 0.002;
 let yearColors = [];
 let gridColor;
+
+// Responsive scaling variables
+let canvasWidth, canvasHeight;
+let scaleFactor;
 
 // Load player data asynchronously
 async function loadPlayerData() {
@@ -95,7 +100,29 @@ function useEmbeddedData() {
 }
 
 function setup() {
-    createCanvas(1080, 1350);
+    // Calculate responsive dimensions based on new 1920x1080 size (80% smaller)
+    let baseWidth = 1920 * 0.8;  // 1536px
+    let baseHeight = 1080 * 0.8; // 864px
+    
+    // Make it responsive to screen size
+    let maxWidth = min(windowWidth - 40, baseWidth);
+    let maxHeight = min(windowHeight - 100, baseHeight);
+    
+    // Maintain aspect ratio
+    let aspectRatio = baseHeight / baseWidth;
+    
+    if (maxHeight > maxWidth * aspectRatio) {
+        canvasWidth = maxWidth;
+        canvasHeight = maxWidth * aspectRatio;
+    } else {
+        canvasHeight = maxHeight;
+        canvasWidth = maxHeight / aspectRatio;
+    }
+    
+    // Calculate scale factor for all elements
+    scaleFactor = canvasWidth / baseWidth;
+    
+    createCanvas(canvasWidth, canvasHeight);
     textFont('Courier New'); // Web-safe font instead of loading TTF
     frameRate(60);
 
@@ -106,7 +133,7 @@ function setup() {
     yearColors[3] = color(100, 150, 255);
     yearColors[4] = color(180, 100, 255);
     
-    gridColor = color(47, 47, 47);
+    gridColor = color(47, 47, 47); // #2f2f2f
 
     currentYear = wcYears[currentYearIndex];
     
@@ -116,12 +143,35 @@ function setup() {
     });
 }
 
+function windowResized() {
+    // Recalculate dimensions when window is resized
+    let baseWidth = 1920 * 0.8;
+    let baseHeight = 1080 * 0.8;
+    
+    let maxWidth = min(windowWidth - 40, baseWidth);
+    let maxHeight = min(windowHeight - 100, baseHeight);
+    
+    let aspectRatio = baseHeight / baseWidth;
+    
+    if (maxHeight > maxWidth * aspectRatio) {
+        canvasWidth = maxWidth;
+        canvasHeight = maxWidth * aspectRatio;
+    } else {
+        canvasHeight = maxHeight;
+        canvasWidth = maxHeight / aspectRatio;
+    }
+    
+    scaleFactor = canvasWidth / baseWidth;
+    resizeCanvas(canvasWidth, canvasHeight);
+}
+
 function draw() {
     // Only draw if data is loaded
     if (!playersData) {
         background(0);
         fill(255);
         textAlign(CENTER, CENTER);
+        textSize(16 * scaleFactor);
         text("Loading...", width/2, height/2);
         return;
     }
@@ -152,16 +202,16 @@ function draw() {
         let angleStep = TWO_PI / marks.length;
         let hovered = null;
 
-        // Draw player marks (same logic as Processing)
+        // Draw player marks with scaled dimensions (same logic as Processing)
         for (let i = 0; i < marks.length; i++) {
             let pm = marks[i];
             let angle = i * angleStep;
             pm.angle = angle;
 
-            let r = 120 + pm.ringIndex * 40;
+            let r = (120 + pm.ringIndex * 40) * scaleFactor;
             let pulseFreq = 0.02 + 0.01 * (i % 5);
-            let pulseAmp = 15 + (i % 10);
-            let lenBase = map(pm.birthYear, 1940, 2002, 60, 200);
+            let pulseAmp = (15 + (i % 10)) * scaleFactor;
+            let lenBase = map(pm.birthYear, 1940, 2002, 60 * scaleFactor, 200 * scaleFactor);
             let pulse = pulseAmp * sin(frameCount * pulseFreq + i * 0.1);
             let len = lenBase + pulse;
 
@@ -178,27 +228,25 @@ function draw() {
             let dy = y2 - y1;
             let lenSq = dx * dx + dy * dy;
 
-            if (lenSq > 0) {
-                let t = ((localMouseX - x1) * dx + (localMouseY - y1) * dy) / lenSq;
-                t = constrain(t, 0, 1);
+            let t = ((localMouseX - x1) * dx + (localMouseY - y1) * dy) / lenSq;
+            t = constrain(t, 0, 1);
 
-                let projX = x1 + t * dx;
-                let projY = y1 + t * dy;
+            let projX = x1 + t * dx;
+            let projY = y1 + t * dy;
 
-                let d = dist(localMouseX, localMouseY, projX, projY);
-                if (d < 8) {
-                    hovered = pm;
-                }
+            let d = dist(localMouseX, localMouseY, projX, projY);
+            if (d < 8 * scaleFactor) {
+                hovered = pm;
             }
 
             // Draw line with hover effect (same as Processing)
             let extraLen = 0;
             if (pm === hovered) {
-                extraLen = 80;
-                strokeWeight(1.8);
-                stroke(yearColors[pm.ringIndex]);
+                extraLen = 80 * scaleFactor;
+                strokeWeight(1.8 * scaleFactor);
+                stroke(yearColors[pm.ringIndex]); // 255 alpha by default
             } else {
-                strokeWeight(0.4);
+                strokeWeight(0.4 * scaleFactor);
                 stroke(red(yearColors[pm.ringIndex]), green(yearColors[pm.ringIndex]), blue(yearColors[pm.ringIndex]), 180);
             }
 
@@ -212,18 +260,19 @@ function draw() {
 
         drawLegend();
 
-        // Hover label (same as Processing)
+        // Hover label with scaled text (same as Processing)
         if (hovered != null) {
             let mx = mouseX;
             let my = mouseY;
 
             let labelText = hovered.label;
+            textSize(12 * scaleFactor);
             let tw = textWidth(labelText);
-            let boxW = tw + 20;
-            let boxH = 22;
+            let boxW = tw + (20 * scaleFactor);
+            let boxH = 22 * scaleFactor;
 
-            let offsetX = 15;
-            let offsetY = 15;
+            let offsetX = 15 * scaleFactor;
+            let offsetY = 15 * scaleFactor;
 
             fill(0, 220);
             noStroke();
@@ -231,7 +280,7 @@ function draw() {
 
             fill(255);
             textAlign(LEFT, CENTER);
-            text(labelText, mx + offsetX + 10, my + offsetY + boxH/2);
+            text(labelText, mx + offsetX + (10 * scaleFactor), my + offsetY + boxH/2);
         }
     }
 
