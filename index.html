@@ -156,31 +156,12 @@
         let scaleFactor;
 
         function setup() {
-            // Use exact 1920 x 1080 dimensions with proper 16:9 responsive scaling
-            let baseWidth = 1920;
-            let baseHeight = 1080;
+            // Simple fixed canvas - 1200x675 (perfect 16:9 ratio)
+            canvasWidth = 1200;
+            canvasHeight = 675;
             
-            // Calculate maximum size that fits in viewport
-            let maxWidth = windowWidth - 40;
-            let maxHeight = windowHeight - 100;
-            
-            // For 16:9 ratio: width = 16, height = 9
-            // So height = width * (9/16)
-            let targetHeight = maxWidth * (9/16);
-            let targetWidth = maxHeight * (16/9);
-            
-            if (targetHeight <= maxHeight) {
-                // Width-constrained: use full available width
-                canvasWidth = maxWidth;
-                canvasHeight = targetHeight;
-            } else {
-                // Height-constrained: use full available height
-                canvasWidth = targetWidth;
-                canvasHeight = maxHeight;
-            }
-            
-            // Calculate scale factor for all elements
-            scaleFactor = canvasWidth / baseWidth;
+            // Scale factor based on 1920x1080 original
+            scaleFactor = canvasWidth / 1920;
             
             let canvas = createCanvas(canvasWidth, canvasHeight);
             canvas.parent('sketch-container');
@@ -206,27 +187,7 @@
         }
         
         function windowResized() {
-            // Recalculate dimensions when window is resized
-            let baseWidth = 1920;
-            let baseHeight = 1080;
-            
-            let maxWidth = windowWidth - 40;
-            let maxHeight = windowHeight - 100;
-            
-            // For 16:9 ratio: width = 16, height = 9
-            let targetHeight = maxWidth * (9/16);
-            let targetWidth = maxHeight * (16/9);
-            
-            if (targetHeight <= maxHeight) {
-                canvasWidth = maxWidth;
-                canvasHeight = targetHeight;
-            } else {
-                canvasWidth = targetWidth;
-                canvasHeight = maxHeight;
-            }
-            
-            scaleFactor = canvasWidth / baseWidth;
-            resizeCanvas(canvasWidth, canvasHeight);
+            // No resizing - keep it simple with fixed dimensions
         }
 
         function draw() {
