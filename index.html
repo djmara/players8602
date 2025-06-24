@@ -6,139 +6,41 @@
     <style>
         body {
             margin: 0;
-            padding: 20px;
+            padding: 0;
             background: #000;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             font-family: 'Courier New', monospace;
-            box-sizing: border-box;
-        }
-        #loading {
-            color: white;
-            text-align: center;
-            font-size: 16px;
-        }
-        #sketch-container {
-            width: 100%;
-            max-width: 900px;
-            display: flex;
-            justify-content: center;
-        }
-        canvas {
-            max-width: 100%;
-            height: auto;
-        }
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
         }
     </style>
 </head>
 <body>
-    <div id="loading">Loading player data...</div>
-    <div id="sketch-container"></div>
-    
     <script>
-        // Your complete player data will be loaded from CSV
-        let playersData = null;
-        
-        // Load the data asynchronously
-        async function loadPlayerData() {
-            try {
-                // Read the CSV file and parse it
-                const response = await fetch('players.csv');
-                const csvText = await response.text();
-                
-                // Simple CSV parsing for your specific format
-                const lines = csvText.split('\n');
-                const headers = lines[0].split(',');
-                
-                playersData = [];
-                const targetYears = [1986, 1990, 1994, 1998, 2002];
-                
-                for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i].trim();
-                    if (!line) continue;
-                    
-                    const values = parseCSVLine(line);
-                    if (values.length < headers.length) continue;
-                    
-                    const player = {};
-                    headers.forEach((header, index) => {
-                        player[header.trim()] = values[index];
-                    });
-                    
-                    // Filter for target years and valid data
-                    if (player.given_name && player.family_name && player.birth_date && player.list_tournaments) {
-                        if (player.given_name !== "not applicable" && player.family_name !== "not applicable") {
-                            const playerYears = player.list_tournaments.toString().split(/[, ]+/)
-                                .map(y => parseInt(y.trim()))
-                                .filter(y => !isNaN(y) && targetYears.includes(y));
-                            
-                            if (playerYears.length > 0) {
-                                playersData.push({
-                                    given_name: player.given_name,
-                                    family_name: player.family_name,
-                                    birth_date: player.birth_date,
-                                    list_tournaments: playerYears.join(", ")
-                                });
-                            }
-                        }
-                    }
-                }
-                
-                document.getElementById('loading').style.display = 'none';
-                console.log('Loaded', playersData.length, 'players');
-                
-            } catch (error) {
-                console.error('Could not load CSV file, using embedded data instead');
-                // Fallback to embedded data if CSV loading fails
-                useEmbeddedData();
-                document.getElementById('loading').style.display = 'none';
-            }
-        }
-        
-        function parseCSVLine(line) {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-            
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                    result.push(current.trim());
-                    current = '';
-                } else {
-                    current += char;
-                }
-            }
-            
-            result.push(current.trim());
-            return result;
-        }
-        
-        function useEmbeddedData() {
-            // Embedded sample data in case CSV loading fails
-            playersData = [
-                {given_name: "Roberto", family_name: "Baggio", birth_date: "1967-02-18", list_tournaments: "1990, 1994, 1998"},
-                {given_name: "Franco", family_name: "Baresi", birth_date: "1960-05-08", list_tournaments: "1986, 1990, 1994"},
-                {given_name: "Gabriel", family_name: "Batistuta", birth_date: "1969-02-01", list_tournaments: "1994, 1998, 2002"},
-                {given_name: "Dennis", family_name: "Bergkamp", birth_date: "1969-05-10", list_tournaments: "1994, 1998"},
-                {given_name: "Gianluigi", family_name: "Buffon", birth_date: "1978-01-28", list_tournaments: "1998, 2002"},
-                {given_name: "Eric", family_name: "Cantona", birth_date: "1966-05-24", list_tournaments: "1986, 1990"},
-                {given_name: "Fabio", family_name: "Cannavaro", birth_date: "1973-09-13", list_tournaments: "1998, 2002"},
-                {given_name: "Paolo", family_name: "Maldini", birth_date: "1968-06-26", list_tournaments: "1990, 1994, 1998, 2002"},
-                {given_name: "Diego", family_name: "Maradona", birth_date: "1960-10-30", list_tournaments: "1986, 1990, 1994"},
-                {given_name: "Ronaldo", family_name: "Nazário", birth_date: "1976-09-18", list_tournaments: "1994, 1998, 2002"}
-            ];
-        }
+        // Simple embedded player data
+        let playersData = [
+            {given_name: "Roberto", family_name: "Baggio", birth_date: "1967-02-18", list_tournaments: "1990, 1994, 1998"},
+            {given_name: "Franco", family_name: "Baresi", birth_date: "1960-05-08", list_tournaments: "1986, 1990, 1994"},
+            {given_name: "Gabriel", family_name: "Batistuta", birth_date: "1969-02-01", list_tournaments: "1994, 1998, 2002"},
+            {given_name: "Dennis", family_name: "Bergkamp", birth_date: "1969-05-10", list_tournaments: "1994, 1998"},
+            {given_name: "Gianluigi", family_name: "Buffon", birth_date: "1978-01-28", list_tournaments: "1998, 2002"},
+            {given_name: "Eric", family_name: "Cantona", birth_date: "1966-05-24", list_tournaments: "1986, 1990"},
+            {given_name: "Fabio", family_name: "Cannavaro", birth_date: "1973-09-13", list_tournaments: "1998, 2002"},
+            {given_name: "Paolo", family_name: "Maldini", birth_date: "1968-06-26", list_tournaments: "1990, 1994, 1998, 2002"},
+            {given_name: "Diego", family_name: "Maradona", birth_date: "1960-10-30", list_tournaments: "1986, 1990, 1994"},
+            {given_name: "Ronaldo", family_name: "Nazário", birth_date: "1976-09-18", list_tournaments: "1994, 1998, 2002"},
+            {given_name: "Zinedine", family_name: "Zidane", birth_date: "1972-06-23", list_tournaments: "1998, 2002"},
+            {given_name: "Thierry", family_name: "Henry", birth_date: "1977-08-17", list_tournaments: "1998, 2002"},
+            {given_name: "Rivaldo", family_name: "Ferreira", birth_date: "1972-04-19", list_tournaments: "1998, 2002"},
+            {given_name: "Cafu", family_name: "Santos", birth_date: "1970-06-07", list_tournaments: "1994, 1998, 2002"},
+            {given_name: "Lothar", family_name: "Matthäus", birth_date: "1961-03-21", list_tournaments: "1986, 1990, 1994"},
+            {given_name: "Jürgen", family_name: "Klinsmann", birth_date: "1964-07-30", list_tournaments: "1986, 1990, 1994, 1998"},
+            {given_name: "Rudi", family_name: "Völler", birth_date: "1960-04-13", list_tournaments: "1986, 1990, 1994"},
+            {given_name: "Gary", family_name: "Lineker", birth_date: "1960-11-30", list_tournaments: "1986, 1990"},
+            {given_name: "Alan", family_name: "Shearer", birth_date: "1970-08-13", list_tournaments: "1998"},
+            {given_name: "David", family_name: "Beckham", birth_date: "1975-05-02", list_tournaments: "1998, 2002"}
+        ];
 
         let marks = [];
         let wcYears = [1986, 1990, 1994, 1998, 2002];
@@ -147,29 +49,16 @@
         let yearSwitchMillis = 10000;
         let lastSwitchMillis = 0;
         let globalRotation = 0;
-        let rotationSpeed = 0.002;
         let yearColors = [];
         let gridColor;
-        
-        // Responsive scaling variables
-        let canvasWidth, canvasHeight;
-        let scaleFactor;
 
         function setup() {
-            // Simple fixed canvas - 1200x675 (perfect 16:9 ratio)
-            canvasWidth = 1200;
-            canvasHeight = 675;
-            
-            // Scale factor based on 1920x1080 original
-            scaleFactor = canvasWidth / 1920;
-            
-            let canvas = createCanvas(canvasWidth, canvasHeight);
-            canvas.parent('sketch-container');
-            
+            // Exact same size as your Processing code
+            createCanvas(1920, 1080);
             textFont('Courier New');
             frameRate(60);
 
-            // Initialize colors
+            // Exact same colors as your Processing code
             yearColors[0] = color(255, 100, 100);
             yearColors[1] = color(255, 180, 50);
             yearColors[2] = color(100, 200, 100);
@@ -179,33 +68,15 @@
             gridColor = color(47, 47, 47);
 
             currentYear = wcYears[currentYearIndex];
-            
-            // Load data and start visualization
-            loadPlayerData().then(() => {
-                loadMarks();
-            });
-        }
-        
-        function windowResized() {
-            // No resizing - keep it simple with fixed dimensions
+            loadMarks();
         }
 
         function draw() {
-            // Only draw if data is loaded
-            if (!playersData) {
-                background(0);
-                fill(255);
-                textAlign(CENTER, CENTER);
-                textSize(16 * scaleFactor);
-                text("Loading...", width/2, height/2);
-                return;
-            }
-
-            // Fade background
+            // Exact same fade background as Processing
             fill(0, 40);
             rect(0, 0, width, height);
 
-            // Year switching logic
+            // Year switching logic (exact same as Processing)
             if (millis() - lastSwitchMillis > yearSwitchMillis) {
                 currentYearIndex = (currentYearIndex + 1) % wcYears.length;
                 currentYear = wcYears[currentYearIndex];
@@ -213,7 +84,7 @@
                 lastSwitchMillis = millis();
             }
 
-            // Dynamic rotation
+            // Dynamic rotation (exact same as Processing)
             let speedMod = 0.001 + 0.0015 * sin(frameCount * 0.01);
             globalRotation += speedMod;
 
@@ -227,16 +98,16 @@
                 let angleStep = TWO_PI / marks.length;
                 let hovered = null;
 
-                // Draw player marks with scaled dimensions
+                // Draw player marks (exact same logic as Processing)
                 for (let i = 0; i < marks.length; i++) {
                     let pm = marks[i];
                     let angle = i * angleStep;
                     pm.angle = angle;
 
-                    let r = (120 + pm.ringIndex * 40) * scaleFactor;
+                    let r = 120 + pm.ringIndex * 40;
                     let pulseFreq = 0.02 + 0.01 * (i % 5);
-                    let pulseAmp = (15 + (i % 10)) * scaleFactor;
-                    let lenBase = map(pm.birthYear, 1940, 2002, 60 * scaleFactor, 200 * scaleFactor);
+                    let pulseAmp = 15 + (i % 10);
+                    let lenBase = map(pm.birthYear, 1940, 2002, 60, 200);
                     let pulse = pulseAmp * sin(frameCount * pulseFreq + i * 0.1);
                     let len = lenBase + pulse;
 
@@ -245,7 +116,7 @@
                     let x2 = cos(angle) * (r + len);
                     let y2 = sin(angle) * (r + len);
 
-                    // Mouse interaction
+                    // Mouse interaction (same as Processing)
                     let localMouseX = (mouseX - width/2) * cos(-globalRotation) - (mouseY - centerY) * sin(-globalRotation);
                     let localMouseY = (mouseX - width/2) * sin(-globalRotation) + (mouseY - centerY) * cos(-globalRotation);
 
@@ -260,18 +131,18 @@
                     let projY = y1 + t * dy;
 
                     let d = dist(localMouseX, localMouseY, projX, projY);
-                    if (d < 8 * scaleFactor) {
+                    if (d < 8) {
                         hovered = pm;
                     }
 
-                    // Draw line with hover effect
+                    // Draw line with hover effect (same as Processing)
                     let extraLen = 0;
                     if (pm === hovered) {
-                        extraLen = 80 * scaleFactor;
-                        strokeWeight(1.8 * scaleFactor);
-                        stroke(yearColors[pm.ringIndex]); // 255 alpha by default
+                        extraLen = 80;
+                        strokeWeight(1.8);
+                        stroke(yearColors[pm.ringIndex]);
                     } else {
-                        strokeWeight(0.4 * scaleFactor);
+                        strokeWeight(0.4);
                         stroke(red(yearColors[pm.ringIndex]), green(yearColors[pm.ringIndex]), blue(yearColors[pm.ringIndex]), 180);
                     }
 
@@ -285,19 +156,19 @@
 
                 drawLegend();
 
-                // Hover label with scaled text
+                // Hover label (same as Processing)
                 if (hovered != null) {
                     let mx = mouseX;
                     let my = mouseY;
 
                     let labelText = hovered.label;
-                    textSize(12 * scaleFactor);
+                    textSize(12);
                     let tw = textWidth(labelText);
-                    let boxW = tw + (20 * scaleFactor);
-                    let boxH = 22 * scaleFactor;
+                    let boxW = tw + 20;
+                    let boxH = 22;
 
-                    let offsetX = 15 * scaleFactor;
-                    let offsetY = 15 * scaleFactor;
+                    let offsetX = 15;
+                    let offsetY = 15;
 
                     fill(0, 220);
                     noStroke();
@@ -305,14 +176,14 @@
 
                     fill(255);
                     textAlign(LEFT, CENTER);
-                    text(labelText, mx + offsetX + (10 * scaleFactor), my + offsetY + boxH/2);
+                    text(labelText, mx + offsetX + 10, my + offsetY + boxH/2);
                 }
             }
         }
 
         function drawRadialGrid() {
             let numCircles = 9;
-            let maxR = 500 * scaleFactor;
+            let maxR = 500;
 
             noFill();
 
@@ -320,14 +191,14 @@
                 let r = map(i, 0, numCircles, 0, maxR);
                 let alpha = map(r, 0, maxR, 255, 0);
                 stroke(red(gridColor), green(gridColor), blue(gridColor), alpha);
-                strokeWeight(0.4 * scaleFactor);
+                strokeWeight(0.4);
                 ellipse(0, 0, r * 2, r * 2);
             }
         }
 
         function drawRadialGridSectors() {
             let numRays = 64;
-            let maxR = 500 * scaleFactor;
+            let maxR = 500;
 
             for (let i = 0; i < numRays; i++) {
                 let angle = map(i, 0, numRays, 0, TWO_PI);
@@ -337,40 +208,38 @@
                 let y2 = sin(angle) * maxR;
 
                 stroke(red(gridColor), green(gridColor), blue(gridColor), 180);
-                strokeWeight(0.4 * scaleFactor);
+                strokeWeight(0.4);
                 line(x1, y1, x2, y2);
             }
         }
 
         function drawLegend() {
-            let lx = 40 * scaleFactor;
-            let ly = 80 * scaleFactor;
+            let lx = 40;
+            let ly = 80;
 
             fill(255);
             textAlign(LEFT);
-            textSize(12 * scaleFactor);
-            text("1986–2002", lx, ly - (24 * scaleFactor));
-            text("World Cup", lx, ly - (10 * scaleFactor));
-            text("players", lx, ly + (4 * scaleFactor));
+            textSize(12);
+            text("1986–2002", lx, ly - 24);
+            text("World Cup", lx, ly - 10);
+            text("players", lx, ly + 4);
 
             for (let i = 0; i < wcYears.length; i++) {
-                let by = ly + (30 * scaleFactor) + i * (22 * scaleFactor);
+                let by = ly + 30 + i * 22;
 
                 stroke(yearColors[i]);
-                strokeWeight(0.4 * scaleFactor);
+                strokeWeight(0.4);
                 noFill();
-                rect(lx, by, 14 * scaleFactor, 14 * scaleFactor);
+                rect(lx, by, 14, 14);
 
                 fill(255);
                 noStroke();
                 textAlign(LEFT, CENTER);
-                text(wcYears[i], lx + (20 * scaleFactor), by + (7 * scaleFactor));
+                text(wcYears[i], lx + 20, by + 7);
             }
         }
 
         function loadMarks() {
-            if (!playersData) return;
-            
             marks = [];
 
             for (let row of playersData) {
