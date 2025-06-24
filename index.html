@@ -156,30 +156,23 @@
         let scaleFactor;
 
         function setup() {
-            // Use your LATEST Processing dimensions: 1920 x 1080 (80% smaller)
-            let baseWidth = 1920 * 0.8;  // 1536px
-            let baseHeight = 1080 * 0.8; // 864px
+            // Use exact 1920 x 1080 dimensions with 16:9 responsive scaling
+            let baseWidth = 1920;
+            let baseHeight = 1080;
             
-            // Make it responsive to screen size but keep it reasonable
-            let maxWidth = min(windowWidth - 40, baseWidth);
-            let maxHeight = min(windowHeight - 100, baseHeight);
+            // Calculate maximum size that fits in viewport while maintaining 16:9
+            let maxWidth = windowWidth - 40;
+            let maxHeight = windowHeight - 100;
             
-            // Maintain proper aspect ratio (1920:1080 = 16:9 landscape)
-            let aspectRatio = baseHeight / baseWidth; // 0.5625 (9/16)
+            // Always maintain 16:9 aspect ratio
+            let aspectRatio = 9 / 16; // height/width for 16:9
             
-            // Choose dimensions that fit while maintaining aspect ratio
             if (maxWidth * aspectRatio <= maxHeight) {
                 canvasWidth = maxWidth;
                 canvasHeight = maxWidth * aspectRatio;
             } else {
                 canvasHeight = maxHeight;
                 canvasWidth = maxHeight / aspectRatio;
-            }
-            
-            // Ensure minimum readable size
-            if (canvasWidth < 400) {
-                canvasWidth = 400;
-                canvasHeight = canvasWidth * aspectRatio;
             }
             
             // Calculate scale factor for all elements
@@ -198,7 +191,7 @@
             yearColors[3] = color(100, 150, 255);
             yearColors[4] = color(180, 100, 255);
             
-            gridColor = color(47, 47, 47); // #2f2f2f
+            gridColor = color(47, 47, 47);
 
             currentYear = wcYears[currentYearIndex];
             
@@ -210,13 +203,14 @@
         
         function windowResized() {
             // Recalculate dimensions when window is resized
-            let baseWidth = 1920 * 0.8;
-            let baseHeight = 1080 * 0.8;
+            let baseWidth = 1920;
+            let baseHeight = 1080;
             
-            let maxWidth = min(windowWidth - 40, baseWidth);
-            let maxHeight = min(windowHeight - 100, baseHeight);
+            let maxWidth = windowWidth - 40;
+            let maxHeight = windowHeight - 100;
             
-            let aspectRatio = baseHeight / baseWidth;
+            // Always maintain 16:9 aspect ratio
+            let aspectRatio = 9 / 16;
             
             if (maxWidth * aspectRatio <= maxHeight) {
                 canvasWidth = maxWidth;
@@ -224,12 +218,6 @@
             } else {
                 canvasHeight = maxHeight;
                 canvasWidth = maxHeight / aspectRatio;
-            }
-            
-            // Ensure minimum readable size
-            if (canvasWidth < 400) {
-                canvasWidth = 400;
-                canvasHeight = canvasWidth * aspectRatio;
             }
             
             scaleFactor = canvasWidth / baseWidth;
