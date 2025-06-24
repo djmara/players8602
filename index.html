@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>World Cup Players 1986-2002 - Responsive</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Courier New', monospace;
+            box-sizing: border-box;
+        }
+        #container {
+            max-width: 90vw;
+            max-height: 80vh;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    
+    <script>
+        // Simple embedded player data
+        let playersData = [
+            {given_name: "Roberto", family_name: "Baggio", birth_date: "1967-02-18", list_tournaments: "1990, 1994, 1998"},
+            {given_name: "Franco", family_name: "Baresi", birth_date: "1960-05-08", list_tournaments: "1986, 1990, 1994"},
+            {given_name: "Gabriel", family_name: "Batistuta", birth_date: "1969-02-01", list_tournaments: "1994, 1998, 2002"},
+            {given_name: "Dennis", family_name: "Bergkamp", birth_date: "1969-05-10", list_tournaments: "1994, 1998"},
+            {given_name: "Gianluigi", family_name: "Buffon", birth_date: "1978-01-28", list_tournaments: "1998, 2002"},
+            {given_name: "Eric", family_name: "Cantona", birth_date: "1966-05-24", list_tournaments: "1986, 1990"},
+            {given_name: "Fabio", family_name: "Cannavaro", birth_date: "1973-09-13", list_tournaments: "1998, 2002"},
+            {given_name: "Paolo", family_name: "Maldini", birth_date: "1968-06-26", list_tournaments: "1990, 1994, 1998, 2002"},
+            {given_name: "Diego", family_name: "Maradona", birth_date: "1960-10-30", list_tournaments: "1986, 1990, 1994"},
+            {given_name: "Ronaldo", family_name: "Nazário", birth_date: "1976-09-18", list_tournaments: "1994, 1998, 2002"},
+            {given_name: "Zinedine", family_name: "Zidane", birth_date: "1972-06-23", list_tournaments: "1998, 2002"},
+            {given_name: "Thierry", family_name: "Henry", birth_date: "1977-08-17", list_tournaments: "1998, 2002"},
+            {given_name: "Rivaldo", family_name: "Ferreira", birth_date: "1972-04-19", list_tournaments: "1998, 2002"},
+            {given_name: "Cafu", family_name: "Santos", birth_date: "1970-06-07", list_tournaments: "1994, 1998, 2002"},
+            {given_name: "Lothar", family_name: "Matthäus", birth_date: "1961-03-21", list_tournaments: "1986, 1990, 1994"},
+            {given_name: "Jürgen", family_name: "Klinsmann", birth_date: "1964-07-30", list_tournaments: "1986, 1990, 1994, 1998"},
+            {given_name: "Rudi", family_name: "Völler", birth_date: "1960-04-13", list_tournaments: "1986, 1990, 1994"},
+            {given_name: "Gary", family_name: "Lineker", birth_date: "1960-11-30", list_tournaments: "1986, 1990"},
+            {given_name: "Alan", family_name: "Shearer", birth_date: "1970-08-13", list_tournaments: "1998"},
+            {given_name: "David", family_name: "Beckham", birth_date: "1975-05-02", list_tournaments: "1998, 2002"}
+        ];
+
+        let marks = [];
+        let wcYears = [1986, 1990, 1994, 1998, 2002];
+        let currentYearIndex = 0;
+        let currentYear = 1986;
+        let yearSwitchMillis = 10000;
+        let lastSwitchMillis = 0;
+        let globalRotation = 0;
+        let yearColors = [];
+        let gridColor;
+        let scaleFactor = 1;
+
+        function setup() {
+            // Calculate responsive size that maintains 16:9 ratio
+            let maxWidth = min(windowWidth * 0.9, 1536); // Max 90% of screen or 1536px
+            let maxHeight = min(windowHeight * 0.8, 864); // Max 80% of screen or 864px
+            
+            // Maintain 16:9 aspect ratio (1920:1080 ratio)
+            let targetWidth = maxWidth;
+            let targetHeight = maxWidth * (9/16); // 16:9 ratio
+            
+            if (targetHeight > maxHeight) {
+                targetHeight = maxHeight;
+                targetWidth = maxHeight * (16/9);
+            }
+            
+            // Calculate scale factor based on our "design size" of 1536x864
+            scaleFactor = targetWidth / 1536;
+            
+            // Create canvas and attach to container
+            let canvas = createCanvas(targetWidth, targetHeight);
+            canvas.parent('container');
+            
+            textFont('Courier New');
+            frameRate(60);
+
+            // Initialize colors
+            yearColors[0] = color(255, 100, 100);
+            yearColors[1] = color(255, 180, 50);
+            yearColors[2] = color(100, 200, 100);
+            yearColors[3] = color(100, 150, 255);
+            yearColors[4] = color(180, 100, 255);
+            
+            gridColor = color(47, 47, 47);
+
+            currentYear = wcYears[currentYearIndex];
+            loadMarks();
+        }
+
+        function windowResized() {
+            // Recalculate canvas size when window resizes
+            let maxWidth = min(windowWidth * 0.9, 1536);
+            let maxHeight = min(windowHeight * 0.8, 864);
+            
+            let targetWidth = maxWidth;
+            let targetHeight = maxWidth * (9/16);
+            
+            if (targetHeight > maxHeight) {
+                targetHeight = maxHeight;
+                targetWidth = maxHeight * (16/9);
+            }
+            
+            scaleFactor = targetWidth / 1536;
+            resizeCanvas(targetWidth, targetHeight);
+        }
+
+        function draw() {
+            // Fade background
+            fill(0, 40);
+            rect(0, 0, width, height);
+
+            // Year switching logic
+            if (millis() - lastSwitchMillis > yearSwitchMillis) {
+                currentYearIndex = (currentYearIndex + 1) % wcYears.length;
+                currentYear = wcYears[currentYearIndex];
+                loadMarks();
+                lastSwitchMillis = millis();
+            }
+
+            // Dynamic rotation
+            let speedMod = 0.001 + 0.0015 * sin(frameCount * 0.01);
+            globalRotation += speedMod;
+
+            let centerY = height / 2;
+            translate(width/2, centerY);
+            rotate(globalRotation);
+
+            drawRadialGrid();
+
+            if (marks.length > 0) {
+                let angleStep = TWO_PI / marks.length;
+                let hovered = null;
+
+                // Draw player marks - ALL dimensions scaled by scaleFactor
+                for (let i = 0; i < marks.length; i++) {
+                    let pm = marks[i];
+                    let angle = i * angleStep;
+                    pm.angle = angle;
+
+                    let r = (120 + pm.ringIndex * 40) * scaleFactor;
+                    let pulseFreq = 0.02 + 0.01 * (i % 5);
+                    let pulseAmp = (15 + (i % 10)) * scaleFactor;
+                    let lenBase = map(pm.birthYear, 1940, 2002, 60 * scaleFactor, 200 * scaleFactor);
+                    let pulse = pulseAmp * sin(frameCount * pulseFreq + i * 0.1);
+                    let len = lenBase + pulse;
+
+                    let x1 = cos(angle) * r;
+                    let y1 = sin(angle) * r;
+                    let x2 = cos(angle) * (r + len);
+                    let y2 = sin(angle) * (r + len);
+
+                    // Mouse interaction
+                    let localMouseX = (mouseX - width/2) * cos(-globalRotation) - (mouseY - centerY) * sin(-globalRotation);
+                    let localMouseY = (mouseX - width/2) * sin(-globalRotation) + (mouseY - centerY) * cos(-globalRotation);
+
+                    let dx = x2 - x1;
+                    let dy = y2 - y1;
+                    let lenSq = dx * dx + dy * dy;
+
+                    let t = ((localMouseX - x1) * dx + (localMouseY - y1) * dy) / lenSq;
+                    t = constrain(t, 0, 1);
+
+                    let projX = x1 + t * dx;
+                    let projY = y1 + t * dy;
+
+                    let d = dist(localMouseX, localMouseY, projX, projY);
+                    if (d < 8 * scaleFactor) {
+                        hovered = pm;
+                    }
+
+                    // Draw line with hover effect
+                    let extraLen = 0;
+                    if (pm === hovered) {
+                        extraLen = 80 * scaleFactor;
+                        strokeWeight(1.8 * scaleFactor);
+                        stroke(yearColors[pm.ringIndex]);
+                    } else {
+                        strokeWeight(0.4 * scaleFactor);
+                        stroke(red(yearColors[pm.ringIndex]), green(yearColors[pm.ringIndex]), blue(yearColors[pm.ringIndex]), 180);
+                    }
+
+                    line(x1, y1, x2 + cos(angle) * extraLen, y2 + sin(angle) * extraLen);
+                }
+
+                drawRadialGridSectors();
+                resetMatrix();
+                drawLegend();
+
+                // Hover label
+                if (hovered != null) {
+                    let mx = mouseX;
+                    let my = mouseY;
+
+                    let labelText = hovered.label;
+                    textSize(12 * scaleFactor);
+                    let tw = textWidth(labelText);
+                    let boxW = tw + (20 * scaleFactor);
+                    let boxH = 22 * scaleFactor;
+
+                    let offsetX = 15 * scaleFactor;
+                    let offsetY = 15 * scaleFactor;
+
+                    fill(0, 220);
+                    noStroke();
+                    rect(mx + offsetX, my + offsetY, boxW, boxH);
+
+                    fill(255);
+                    textAlign(LEFT, CENTER);
+                    text(labelText, mx + offsetX + (10 * scaleFactor), my + offsetY + boxH/2);
+                }
+            }
+        }
+
+        function drawRadialGrid() {
+            let numCircles = 9;
+            let maxR = 500 * scaleFactor;
+
+            noFill();
+
+            for (let i = 0; i <= numCircles; i++) {
+                let r = map(i, 0, numCircles, 0, maxR);
+                let alpha = map(r, 0, maxR, 255, 0);
+                stroke(red(gridColor), green(gridColor), blue(gridColor), alpha);
+                strokeWeight(0.4 * scaleFactor);
+                ellipse(0, 0, r * 2, r * 2);
+            }
+        }
+
+        function drawRadialGridSectors() {
+            let numRays = 64;
+            let maxR = 500 * scaleFactor;
+
+            for (let i = 0; i < numRays; i++) {
+                let angle = map(i, 0, numRays, 0, TWO_PI);
+                let x1 = 0;
+                let y1 = 0;
+                let x2 = cos(angle) * maxR;
+                let y2 = sin(angle) * maxR;
+
+                stroke(red(gridColor), green(gridColor), blue(gridColor), 180);
+                strokeWeight(0.4 * scaleFactor);
+                line(x1, y1, x2, y2);
+            }
+        }
+
+        function drawLegend() {
+            let lx = 40 * scaleFactor;
+            let ly = 80 * scaleFactor;
+
+            fill(255);
+            textAlign(LEFT);
+            textSize(12 * scaleFactor);
+            text("1986–2002", lx, ly - (24 * scaleFactor));
+            text("World Cup", lx, ly - (10 * scaleFactor));
+            text("players", lx, ly + (4 * scaleFactor));
+
+            for (let i = 0; i < wcYears.length; i++) {
+                let by = ly + (30 * scaleFactor) + i * (22 * scaleFactor);
+
+                stroke(yearColors[i]);
+                strokeWeight(0.4 * scaleFactor);
+                noFill();
+                rect(lx, by, 14 * scaleFactor, 14 * scaleFactor);
+
+                fill(255);
+                noStroke();
+                textAlign(LEFT, CENTER);
+                text(wcYears[i], lx + (20 * scaleFactor), by + (7 * scaleFactor));
+            }
+        }
+
+        function loadMarks() {
+            marks = [];
+
+            for (let row of playersData) {
+                let tournaments = row.list_tournaments;
+                let birth = row.birth_date;
+                let given = row.given_name;
+                let family = row.family_name;
+
+                if (!given || given === "not applicable" || given.trim().length < 1) continue;
+                if (!family || family === "not applicable" || family.trim().length < 1) continue;
+
+                if (tournaments && birth && birth.length >= 4) {
+                    let birthYear = parseInt(birth.substring(0, 4));
+                    let tourYears = tournaments.split(/[, ]+/);
+
+                    for (let ty of tourYears) {
+                        let tYear = parseInt(ty.trim());
+
+                        for (let i = 0; i < wcYears.length; i++) {
+                            if (tYear === wcYears[i]) {
+                                let pm = new PlayerMark(i, birthYear, given + " " + family);
+                                marks.push(pm);
+                            }
+                        }
+                    }
+                }
+            }
+
+            console.log("Marks loaded for year " + currentYear + ":", marks.length);
+        }
+
+        class PlayerMark {
+            constructor(ri, by, l) {
+                this.ringIndex = ri;
+                this.birthYear = by;
+                this.label = l;
+                this.angle = 0;
+            }
+        }
+    </script>
+</body>
+</html>
